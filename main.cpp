@@ -20,7 +20,7 @@
 #include <SDL_opengl.h>
 #include "glm/mat4x4.hpp"                // 4x4 Matrix
 #include "glm/gtc/matrix_transform.hpp"  // Matrix transformation methods
-#include "ShaderProgram.h"               // We'll talk about these later in the course
+#include "ShaderProgram.h"               
 
 enum AppStatus { RUNNING, TERMINATED };
 
