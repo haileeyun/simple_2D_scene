@@ -88,11 +88,14 @@ g_model_matrix,       // Defines every translation, rotation, and/or scaling app
 g_projection_matrix;  // Defines the characteristics of your camera, such as clip panes, field of view, projection method, etc.
 
 constexpr float MILLISECONDS_IN_SECOND = 1000.0f;
-glm::vec3 g_position = glm::vec3(0.0f, 0.0f, 0.0f);
+//glm::vec3 g_position = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_position_black_cat = glm::vec3(0.0f, 0.0f, 0.0f); // what is added for their positions
+glm::vec3 g_position_butterfly = glm::vec3(0.0f, 0.0f, 0.0f);
 float g_previous_ticks;
 float g_radius = 2;
 float g_frames = 0;
 
+// what is added for their rotations
 glm::vec3 g_rotation_black_cat   = glm::vec3(0.0f, 0.0f, 0.0f),
           g_rotation_butterfly = glm::vec3(0.0f, 0.0f, 0.0f);
 
@@ -202,22 +205,36 @@ void update()
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
     
-    /* Game logic */
+    // rotation the black cat and butterfly across the z-axis
     g_rotation_black_cat.y += ROT_INCREMENT * delta_time;
     g_rotation_butterfly.y += -1 * ROT_INCREMENT * delta_time;
+
+    // try to have the black cat circle the sceen
+    static float rotation_angle = 0.0f;
+    float rotation_speed = 1.0f;
+    rotation_angle += rotation_speed * delta_time;
+    g_position_black_cat.x = g_radius * cos(rotation_angle);
+    g_position_black_cat.y = g_radius * sin(rotation_angle);
+
+    // butterfly spins twice as fast
+    g_position_butterfly.x = g_radius * cos(rotation_angle*2);
+    g_position_butterfly.y = g_radius * sin(rotation_angle*2);
+
+
+
 
     /* Model matrix reset */
     g_black_cat_matrix   = glm::mat4(1.0f);
     g_butterfly_matrix = glm::mat4(1.0f);
     
     /* Transformations */
-    g_black_cat_matrix = glm::translate(g_black_cat_matrix, INIT_POS_BLACK_CAT);
+    g_black_cat_matrix = glm::translate(g_black_cat_matrix, g_position_black_cat);
     g_black_cat_matrix = glm::rotate(g_black_cat_matrix,
                                  g_rotation_black_cat.y,
                                  glm::vec3(0.0f, 1.0f, 0.0f));
     g_black_cat_matrix = glm::scale(g_black_cat_matrix, INIT_SCALE);
     
-    g_butterfly_matrix = glm::translate(g_butterfly_matrix, INIT_POS_BUTTERFLY);
+    g_butterfly_matrix = glm::translate(g_butterfly_matrix, g_position_butterfly);
     g_butterfly_matrix = glm::rotate(g_butterfly_matrix,
                                   g_rotation_butterfly.y,
                                   glm::vec3(0.0f, 1.0f, 0.0f));
