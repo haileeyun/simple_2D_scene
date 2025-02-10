@@ -55,8 +55,8 @@ constexpr GLint NUMBER_OF_TEXTURES = 1, // to be generated, that is
 constexpr char BLACK_CAT_SPRITE_FILEPATH[]   = "shaders/black_cat.png",
                BUTTERFLY_SPRITE_FILEPATH[] = "shaders/butterfly.png";
 
-// initial position of sprites
-constexpr glm::vec3 INIT_SCALE      = glm::vec3(5.0f, 5.98f, 0.0f),
+// initial position and scale of sprites
+constexpr glm::vec3 INIT_SCALE      = glm::vec3(2.0f, 2.0f, 0.0f),
                     INIT_POS_BLACK_CAT   = glm::vec3(2.0f, 0.0f, 0.0f),
                     INIT_POS_BUTTERFLY = glm::vec3(-2.0f, 0.0f, 0.0f);
 
@@ -132,7 +132,7 @@ void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);  // initialize video
 
-    g_display_window = SDL_CreateWindow("Hello, textures!",
+    g_display_window = SDL_CreateWindow("project 1",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
@@ -231,7 +231,7 @@ void draw_object(glm::mat4 &object_g_model_matrix, GLuint &object_texture_id)
     glDrawArrays(GL_TRIANGLES, 0, 6); // we are now drawing 2 triangles, so use 6, not 3
 }
 
-
+// binding and rendering the textures
 void render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
