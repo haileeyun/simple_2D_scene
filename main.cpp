@@ -31,6 +31,8 @@
 #include "stb_image.h"
 
 enum AppStatus { RUNNING, TERMINATED };
+enum ScaleDirection { GROWING, SHRINKING };
+
 
 // Our window dimensions
 constexpr int WINDOW_WIDTH = 640,
@@ -95,12 +97,28 @@ glm::vec3 g_position_black_cat = glm::vec3(0.0f, 0.0f, 0.0f); // what is added f
 glm::vec3 g_position_butterfly = glm::vec3(0.0f, 0.0f, 0.0f);
 float g_previous_ticks;
 float g_radius = 2;
-float g_frames = 0;
+float g_frames = 0.0f;
 float g_butterfly_radius = 1;
+
+int g_frame_counter = 0;
+ScaleDirection g_scale_direction = GROWING;
+
 
 // what is added for their rotations
 glm::vec3 g_rotation_black_cat   = glm::vec3(0.0f, 0.0f, 0.0f),
           g_rotation_butterfly = glm::vec3(0.0f, 0.0f, 0.0f);
+
+glm::vec3 g_scale_butterfly = glm::vec3(0.0f, 0.0f, 0.0f); // to be added to butterfly scale vector so that it pulses
+
+constexpr float BASE_SCALE = 1.0f,      // The unscaled size of your object
+MAX_AMPLITUDE = 0.4f,  // The most our triangle will be scaled up/down
+PULSE_SPEED = 0.5f;    // How fast you want your triangle to "beat"
+// the lower the pulse_speed, the faster it beats
+
+constexpr float GROWTH_FACTOR = 1.1f; // not sure if i need these yet
+constexpr float SHRINK_FACTOR = 0.9f;
+constexpr int   MAX_FRAME = 40;
+
 
 GLuint g_black_cat_texture_id,
        g_butterfly_texture_id;
@@ -202,7 +220,8 @@ void process_input()
 }
 
 void update()
-{
+{   
+    g_frame_counter++;
     /* Delta time calculations */
     float ticks = (float) SDL_GetTicks() / MILLISECONDS_IN_SECOND;
     float delta_time = ticks - g_previous_ticks;
@@ -222,9 +241,11 @@ void update()
     // butterfly spins twice as fast
     g_position_butterfly.x = g_butterfly_radius * cos(rotation_angle*2);
     g_position_butterfly.y = g_butterfly_radius * sin(rotation_angle*2);
+    
 
-
-
+    // butterfly pulse
+    float butterfly_scale_factor = BASE_SCALE + MAX_AMPLITUDE * glm::cos(rotation_angle / PULSE_SPEED);
+    glm::vec3 butterfly_scale_factors = glm::vec3(butterfly_scale_factor, butterfly_scale_factor, 0.0f);
 
     /* Model matrix reset */
     g_black_cat_matrix   = glm::mat4(1.0f);
@@ -241,7 +262,9 @@ void update()
     g_butterfly_matrix = glm::rotate(g_butterfly_matrix,
                                   g_rotation_butterfly.y,
                                   glm::vec3(0.0f, 1.0f, 0.0f));
-    g_butterfly_matrix = glm::scale(g_butterfly_matrix, INIT_SCALE_BUTTERFLY);
+    g_butterfly_matrix = glm::scale(g_butterfly_matrix, butterfly_scale_factors);
+
+
 }
 
 void draw_object(glm::mat4 &object_g_model_matrix, GLuint &object_texture_id)
