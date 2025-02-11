@@ -57,6 +57,8 @@ constexpr char BLACK_CAT_SPRITE_FILEPATH[]   = "shaders/black_cat.png",
 
 // initial position and scale of sprites
 constexpr glm::vec3 INIT_SCALE      = glm::vec3(2.0f, 2.0f, 0.0f),
+                    INIT_SCALE_BLACK_CAT = glm::vec3(2.0f, 2.0f, 0.0f),
+                    INIT_SCALE_BUTTERFLY = glm::vec3(1.0f, 1.0f, 0.0f),
                     INIT_POS_BLACK_CAT   = glm::vec3(2.0f, 0.0f, 0.0f),
                     INIT_POS_BUTTERFLY = glm::vec3(-2.0f, 0.0f, 0.0f);
 
@@ -94,6 +96,7 @@ glm::vec3 g_position_butterfly = glm::vec3(0.0f, 0.0f, 0.0f);
 float g_previous_ticks;
 float g_radius = 2;
 float g_frames = 0;
+float g_butterfly_radius = 1;
 
 // what is added for their rotations
 glm::vec3 g_rotation_black_cat   = glm::vec3(0.0f, 0.0f, 0.0f),
@@ -206,7 +209,7 @@ void update()
     g_previous_ticks = ticks;
     
     // rotation the black cat and butterfly across the z-axis
-    g_rotation_black_cat.y += ROT_INCREMENT * delta_time;
+    //g_rotation_black_cat.y += ROT_INCREMENT * delta_time;
     g_rotation_butterfly.y += -1 * ROT_INCREMENT * delta_time;
 
     // try to have the black cat circle the sceen
@@ -217,8 +220,8 @@ void update()
     g_position_black_cat.y = g_radius * sin(rotation_angle);
 
     // butterfly spins twice as fast
-    g_position_butterfly.x = g_radius * cos(rotation_angle*2);
-    g_position_butterfly.y = g_radius * sin(rotation_angle*2);
+    g_position_butterfly.x = g_butterfly_radius * cos(rotation_angle*2);
+    g_position_butterfly.y = g_butterfly_radius * sin(rotation_angle*2);
 
 
 
@@ -232,13 +235,13 @@ void update()
     g_black_cat_matrix = glm::rotate(g_black_cat_matrix,
                                  g_rotation_black_cat.y,
                                  glm::vec3(0.0f, 1.0f, 0.0f));
-    g_black_cat_matrix = glm::scale(g_black_cat_matrix, INIT_SCALE);
+    g_black_cat_matrix = glm::scale(g_black_cat_matrix, INIT_SCALE_BLACK_CAT);
     
-    g_butterfly_matrix = glm::translate(g_butterfly_matrix, g_position_butterfly);
+    g_butterfly_matrix = glm::translate(g_black_cat_matrix, g_position_butterfly);
     g_butterfly_matrix = glm::rotate(g_butterfly_matrix,
                                   g_rotation_butterfly.y,
                                   glm::vec3(0.0f, 1.0f, 0.0f));
-    g_butterfly_matrix = glm::scale(g_butterfly_matrix, INIT_SCALE);
+    g_butterfly_matrix = glm::scale(g_butterfly_matrix, INIT_SCALE_BUTTERFLY);
 }
 
 void draw_object(glm::mat4 &object_g_model_matrix, GLuint &object_texture_id)
