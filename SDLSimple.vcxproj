@@ -24,7 +24,7 @@
     <ProjectGuid>{1b8a6e7f-eb0c-4493-9fbc-56a2249567ac}</ProjectGuid>
     <RootNamespace>SDLSimple</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>simple_2D_scene</ProjectName>
+    <ProjectName>pong_clone</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

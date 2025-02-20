@@ -1,15 +1,12 @@
 /**
 * Author: Hailee Yun
-* Assignment: Simple 2D Scene
-* Date due: 2025-02-15, 11:59pm
+* Assignment: Pong Clone
+* Date due: 2025-3-01, 11:59pm
 * I pledge that I have completed this assignment without
 * collaborating with anyone else, in conformance with the
 * NYU School of Engineering Policies and Procedures on
 * Academic Misconduct.
 **/
-
-// note to self: have 2 sprites of my own art, rotating on the z-axis.
-// successfully runs
 
 
 #define GL_SILENCE_DEPRECATION
@@ -48,7 +45,6 @@ BG_OPACITY = 1.0f;
 constexpr char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
                F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 
-
 // texture constants
 constexpr GLint NUMBER_OF_TEXTURES = 1, // to be generated, that is
                 LEVEL_OF_DETAIL    = 0, // mipmap reduction image level
@@ -65,7 +61,6 @@ constexpr glm::vec3 INIT_SCALE      = glm::vec3(2.0f, 2.0f, 0.0f),
                     INIT_POS_BUTTERFLY = glm::vec3(-2.0f, 0.0f, 0.0f);
 
 constexpr float ROT_INCREMENT = 1.0f; // rotational constant
-
 
 // Our viewport—or our "camera"'s—position and dimensions
 constexpr int VIEWPORT_X = 0,
@@ -85,23 +80,28 @@ SDL_Window* g_display_window;
 
 ShaderProgram g_shader_program;
 
-glm::mat4 g_view_matrix,        // Defines the position (location and orientation) of the camera
+glm::mat4 g_view_matrix,   
 g_black_cat_matrix,
 g_butterfly_matrix,
-g_model_matrix,       // Defines every translation, rotation, and/or scaling applied to an object; we'll look at these next week
-g_projection_matrix;  // Defines the characteristics of your camera, such as clip panes, field of view, projection method, etc.
+g_model_matrix,
+g_projection_matrix;  
 
 constexpr float MILLISECONDS_IN_SECOND = 1000.0f;
-//glm::vec3 g_position = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 g_position_black_cat = glm::vec3(0.0f, 0.0f, 0.0f); // what is added for their positions
 glm::vec3 g_position_butterfly = glm::vec3(0.0f, 0.0f, 0.0f);
 float g_previous_ticks;
 float g_radius = 2;
 float g_frames = 0.0f;
-float g_butterfly_radius = 1;
 
 int g_frame_counter = 0;
-ScaleDirection g_scale_direction = GROWING;
+
+glm::vec3 g_black_cat_position = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_black_cat_movement = glm::vec3(0.0f, 0.0f, 0.0f);                                                           
+float g_black_cat_speed = 5.0f;  // move 1 unit per second
+
+glm::vec3 g_butterfly_position = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_butterfly_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+float g_butterfly_speed = 5.0f;  // move 1 unit per second
 
 
 // what is added for their rotations
@@ -113,13 +113,13 @@ glm::vec3 g_scale_butterfly = glm::vec3(0.0f, 0.0f, 0.0f); // to be added to but
 constexpr float BASE_SCALE = 1.0f,      // The unscaled size of your object
 MAX_AMPLITUDE = 0.4f,  // The most our triangle will be scaled up/down
 PULSE_SPEED = 0.5f;    // How fast you want your triangle to "beat"
-// the lower the pulse_speed, the faster it beats
 
 constexpr float GROWTH_FACTOR = 1.1f; // not sure if i need these yet
 constexpr float SHRINK_FACTOR = 0.9f;
 constexpr int   MAX_FRAME = 40;
 
 
+// texture ids
 GLuint g_black_cat_texture_id,
        g_butterfly_texture_id;
 
@@ -156,7 +156,7 @@ void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);  // initialize video
 
-    g_display_window = SDL_CreateWindow("project 1",
+    g_display_window = SDL_CreateWindow("pong_clone",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
@@ -190,8 +190,6 @@ void initialise()
     g_view_matrix       = glm::mat4(1.0f);
     g_projection_matrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f);
 
-    //g_model_matrix = glm::mat4(1.0f);  // Defines every translation, rotations, or scaling applied to an object
-
     g_shader_program.set_projection_matrix(g_projection_matrix);
     g_shader_program.set_view_matrix(g_view_matrix);
 
@@ -209,62 +207,89 @@ void initialise()
 
 void process_input()
 {
+    // VERY IMPORTANT: If nothing is pressed, we don't want to go anywhere
+    g_black_cat_movement = glm::vec3(0.0f);
+    g_butterfly_movement = glm::vec3(0.0f);
+
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE)
+        switch (event.type)
         {
-            g_app_status = TERMINATED;
+            // End game
+            case SDL_QUIT:
+            case SDL_WINDOWEVENT_CLOSE:
+                g_app_status = TERMINATED;
+                break;
+            
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                    case SDLK_LEFT:
+                        // Move the player left
+                        break;
+                    
+                    case SDLK_RIGHT:
+                        // Move the player right
+                        //g_black_cat_movement.x = 1.0f;
+                        break;
+                    
+                    case SDLK_q:
+                        // Quit the game with a keystroke
+                        g_app_status = TERMINATED;
+                        break;
+                    
+                    default:
+                        break;
+                }
+            default:
+                break;
         }
+    }
+       
+    const Uint8 *key_state = SDL_GetKeyboardState(NULL);
+                                                                    
+    // Black cat movement (Arrow Keys)
+    if (key_state[SDL_SCANCODE_LEFT]) { g_black_cat_movement.x = -1.0f; }
+    if (key_state[SDL_SCANCODE_RIGHT]) { g_black_cat_movement.x = 1.0f; }
+    if (key_state[SDL_SCANCODE_UP]) { g_black_cat_movement.y = 1.0f; }
+    if (key_state[SDL_SCANCODE_DOWN]) { g_black_cat_movement.y = -1.0f; }
+
+    // Butterfly movement (WASD keys)
+    if (key_state[SDL_SCANCODE_A]) { g_butterfly_movement.x = -1.0f; }  // Move left
+    if (key_state[SDL_SCANCODE_D]) { g_butterfly_movement.x = 1.0f; }  // Move right
+    if (key_state[SDL_SCANCODE_W]) { g_butterfly_movement.y = 1.0f; }  // Move up
+    if (key_state[SDL_SCANCODE_S]) { g_butterfly_movement.y = -1.0f; }  // Move down
+    
+    // This makes sure that the player can't "cheat" their way into moving
+    // faster
+    if (glm::length(g_black_cat_movement) > 1.0f) {
+        g_black_cat_movement = glm::normalize(g_black_cat_movement);
+    }
+    if (glm::length(g_butterfly_movement) > 1.0f) {
+        g_butterfly_movement = glm::normalize(g_butterfly_movement);
     }
 }
 
 void update()
-{   
-    g_frame_counter++;
-    /* Delta time calculations */
+{
+    /* DELTA TIME */
     float ticks = (float) SDL_GetTicks() / MILLISECONDS_IN_SECOND;
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
+
+    /* GAME LOGIC */
+    g_black_cat_position += g_black_cat_movement * g_black_cat_speed * delta_time;
+    g_butterfly_position += g_butterfly_movement * g_butterfly_speed * delta_time;
     
-    // rotation the black cat and butterfly across the z-axis
-    //g_rotation_black_cat.y += ROT_INCREMENT * delta_time;
-    g_rotation_butterfly.y += -1 * ROT_INCREMENT * delta_time;
+    /* TRANSFORMATIONS */
+    g_black_cat_matrix = glm::mat4(1.0f);
+    g_black_cat_matrix = glm::translate(g_black_cat_matrix, g_black_cat_position);
+    g_black_cat_matrix = glm::scale(g_black_cat_matrix, INIT_SCALE);
 
-    // try to have the black cat circle the sceen
-    static float rotation_angle = 0.0f;
-    float rotation_speed = 1.0f;
-    rotation_angle += rotation_speed * delta_time;
-    g_position_black_cat.x = g_radius * cos(rotation_angle);
-    g_position_black_cat.y = g_radius * sin(rotation_angle);
-
-    // butterfly spins twice as fast
-    g_position_butterfly.x = g_butterfly_radius * cos(rotation_angle*2);
-    g_position_butterfly.y = g_butterfly_radius * sin(rotation_angle*2);
-    
-
-    // butterfly pulse
-    float butterfly_scale_factor = BASE_SCALE + MAX_AMPLITUDE * glm::cos(rotation_angle / PULSE_SPEED);
-    glm::vec3 butterfly_scale_factors = glm::vec3(butterfly_scale_factor, butterfly_scale_factor, 0.0f);
-
-    /* Model matrix reset */
-    g_black_cat_matrix   = glm::mat4(1.0f);
     g_butterfly_matrix = glm::mat4(1.0f);
-    
-    /* Transformations */
-    g_black_cat_matrix = glm::translate(g_black_cat_matrix, g_position_black_cat);
-    g_black_cat_matrix = glm::rotate(g_black_cat_matrix,
-                                 g_rotation_black_cat.y,
-                                 glm::vec3(0.0f, 1.0f, 0.0f));
-    g_black_cat_matrix = glm::scale(g_black_cat_matrix, INIT_SCALE_BLACK_CAT);
-    
-    g_butterfly_matrix = glm::translate(g_black_cat_matrix, g_position_butterfly);
-    g_butterfly_matrix = glm::rotate(g_butterfly_matrix,
-                                  g_rotation_butterfly.y,
-                                  glm::vec3(0.0f, 1.0f, 0.0f));
-    g_butterfly_matrix = glm::scale(g_butterfly_matrix, butterfly_scale_factors);
-
-
+    g_butterfly_matrix = glm::translate(g_butterfly_matrix, g_butterfly_position);
+    g_butterfly_matrix = glm::scale(g_butterfly_matrix, INIT_SCALE_BUTTERFLY);
 }
 
 void draw_object(glm::mat4 &object_g_model_matrix, GLuint &object_texture_id)
@@ -315,21 +340,18 @@ void render()
 
 void shutdown() { SDL_Quit(); }
 
-/**
- Start here—we can see the general structure of a game loop without worrying too much about the details yet.
- */
+
 int main(int argc, char* argv[])
 {
-    // Initialise our program—whatever that means
     initialise();
 
     while (g_app_status == RUNNING)
     {
-        process_input();  // If the player did anything—press a button, move the joystick—process it
-        update();         // Using the game's previous state, and whatever new input we have, update the game's state
-        render();         // Once updated, render those changes onto the screen
+        process_input();  
+        update();         
+        render();         
     }
 
-    shutdown();  // The game is over, so let's perform any shutdown protocols
+    shutdown();  
     return 0;
 }
