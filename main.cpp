@@ -67,7 +67,7 @@ constexpr glm::vec3 INIT_SCALE      = glm::vec3(2.0f, 2.0f, 0.0f),
 constexpr float ROT_INCREMENT = 1.0f; // rotational constant
 
 
-// Our viewport—or our "camera"'s—position and dimensions
+// Our viewportï¿½or our "camera"'sï¿½position and dimensions
 constexpr int VIEWPORT_X = 0,
 VIEWPORT_Y = 0,
 VIEWPORT_WIDTH = WINDOW_WIDTH,
@@ -316,16 +316,16 @@ void render()
 void shutdown() { SDL_Quit(); }
 
 /**
- Start here—we can see the general structure of a game loop without worrying too much about the details yet.
+ Start hereï¿½we can see the general structure of a game loop without worrying too much about the details yet.
  */
 int main(int argc, char* argv[])
 {
-    // Initialise our program—whatever that means
+    // Initialise our programï¿½whatever that means
     initialise();
 
     while (g_app_status == RUNNING)
     {
-        process_input();  // If the player did anything—press a button, move the joystick—process it
+        process_input();  // If the player did anythingï¿½press a button, move the joystickï¿½process it
         update();         // Using the game's previous state, and whatever new input we have, update the game's state
         render();         // Once updated, render those changes onto the screen
     }
